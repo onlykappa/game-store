@@ -95,8 +95,27 @@ class DownloadManager {
       if (task.total !== null && task.received !== task.total) throw new Error('File was truncated. Retry the download.');
       const digest = hash.digest('hex');
       if (task.sha256 && digest !== task.sha256) throw new Error('SHA-256 does not match. The file was not accepted.');
-      // Exclusive hard-link creation cannot replace an existing destination.
-      await fs.promises.link(partial, task.destination); await fs.promises.unlink(partial);
+      // Prefer the zero-copy operation, but exFAT/FAT cannot create hard links.
+      // Both paths create the destination exclusively, after verification.
+      try {
+        await fs.promises.link(partial, task.destination);
+      } catch (err) {
+        // libuv maps Windows ERROR_INVALID_FUNCTION (exFAT) to EISDIR.
+        const unsupported = ['ENOTSUP', 'EOPNOTSUPP', 'ENOSYS', 'EPERM'].includes(err.code)
+          || (process.platform === 'win32' && err.code === 'EISDIR');
+        if (!unsupported) throw err;
+        const output = fs.createWriteStream(task.destination, { flags: 'wx' });
+        let created = false;
+        output.once('open', () => { created = true; });
+        try {
+          await pipeline(fs.createReadStream(partial), output, { signal: entry.controller.signal });
+        } catch (copyError) {
+          // A collision never opened our file: preserve the existing destination.
+          if (created) await fs.promises.unlink(task.destination);
+          throw copyError;
+        }
+      }
+      await fs.promises.unlink(partial);
       task.status = 'completed'; task.actualSha256 = digest; task.finishedAt = new Date().toISOString();
     } catch (err) {
       task.status = entry.cancelled ? 'cancelled' : 'failed'; task.error = entry.cancelled ? 'Cancelled. Retry starts from the beginning.' : err.message;

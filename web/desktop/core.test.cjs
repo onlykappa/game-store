@@ -60,3 +60,79 @@ test('parallel downloads never overwrite each other',async t=>{
   const {manager,dir,url}=await fixture(t); const a=manager.start({id:'a',title:'A',fileName:'same.zip',downloadUrl:url+'/file'},dir); const b=manager.start({id:'b',title:'B',fileName:'same.zip',downloadUrl:url+'/file'},dir);
   const results=await Promise.all([done(manager,a.id),done(manager,b.id)]); assert.notEqual(results[0].destination,results[1].destination); results.forEach(r=>assert.equal(r.status,'completed'));
 });
+
+test('downloads finish without hard-link support after hash verification', async t => {
+  const {manager,dir,url}=await fixture(t);
+  const link = t.mock.method(fs.promises, 'link', async () => { throw Object.assign(new Error('Hard links unsupported'), {code:'ENOTSUP'}); });
+  const task=manager.start({id:'portable',title:'Portable',fileName:'file.bin',downloadUrl:url+'/file',sha256:digest},dir);
+  const result=await done(manager,task.id);
+  assert.equal(result.status,'completed');
+  assert.deepEqual(fs.readFileSync(result.destination),bytes);
+  assert.equal(result.actualSha256,digest);
+  assert.equal(fs.existsSync(result.destination+'.part'),false);
+  const bad=manager.start({id:'bad',title:'Bad',fileName:'file.bin',downloadUrl:url+'/file',sha256:'0'.repeat(64)},dir);
+  assert.equal((await done(manager,bad.id)).status,'failed');
+  assert.equal(link.mock.callCount(),1);
+});
+
+test('Windows exFAT hard-link EISDIR also completes a verified file', {skip:process.platform!=='win32'}, async t => {
+  const {manager,dir,url}=await fixture(t);
+  t.mock.method(fs.promises,'link',async()=>{throw Object.assign(new Error('Invalid function mapped to EISDIR'),{code:'EISDIR'});});
+  const task=manager.start({id:'exfat',title:'exFAT',fileName:'file.bin',downloadUrl:url+'/file',sha256:digest},dir);
+  const result=await done(manager,task.id);
+  assert.equal(result.status,'completed');
+  assert.deepEqual(fs.readFileSync(result.destination),bytes);
+  assert.equal(result.actualSha256,digest);
+});
+
+test('portable completion never replaces a file created during finalization', async t => {
+  const {manager,dir,url}=await fixture(t);
+  t.mock.method(fs.promises, 'link', async (_src, dest) => {
+    fs.writeFileSync(dest,'Existing user data');
+    throw Object.assign(new Error('Hard links unsupported'), {code:'EPERM'});
+  });
+  const task=manager.start({id:'collision',title:'Collision',fileName:'file.bin',downloadUrl:url+'/file'},dir);
+  const result=await done(manager,task.id);
+  assert.equal(result.status,'failed');
+  assert.match(result.error,/EEXIST/);
+  assert.equal(fs.readFileSync(result.destination,'utf8'),'Existing user data');
+  assert.deepEqual(fs.readFileSync(result.destination+'.part'),bytes);
+});
+
+test('cancelling portable completion removes only its incomplete final file', async t => {
+  const {manager,dir,url}=await fixture(t);
+  t.mock.method(fs.promises, 'link', async () => { throw Object.assign(new Error('Hard links unsupported'), {code:'ENOTSUP'}); });
+  const originalWrite=fs.createWriteStream;
+  let id, cancelCopy=true;
+  t.mock.method(fs, 'createWriteStream', (file, options) => {
+    const stream=originalWrite(file,options);
+    if (!file.endsWith('.part')) stream.once('open',()=>{ if (cancelCopy) manager.cancel(id); });
+    return stream;
+  });
+  const task=manager.start({id:'cancel-copy',title:'Cancel copy',fileName:'file.bin',downloadUrl:url+'/file'},dir);
+  id=task.id;
+  const result=await done(manager,id);
+  assert.equal(result.status,'cancelled');
+  assert.equal(fs.existsSync(result.destination),false);
+  assert.deepEqual(fs.readFileSync(result.destination+'.part'),bytes);
+  cancelCopy=false;
+  manager.retry(id);
+  assert.equal((await done(manager,id)).status,'completed');
+});
+
+test('failed portable writes retain the verified partial and remove their destination', async t => {
+  const {manager,dir,url}=await fixture(t);
+  t.mock.method(fs.promises, 'link', async () => { throw Object.assign(new Error('Hard links unsupported'), {code:'ENOTSUP'}); });
+  const originalWrite=fs.createWriteStream;
+  t.mock.method(fs, 'createWriteStream', (file, options) => {
+    const stream=originalWrite(file,options);
+    if (!file.endsWith('.part')) stream._write=(_chunk,_encoding,callback)=>callback(Object.assign(new Error('Disk full'),{code:'ENOSPC'}));
+    return stream;
+  });
+  const task=manager.start({id:'full-disk',title:'Full disk',fileName:'file.bin',downloadUrl:url+'/file',sha256:digest},dir);
+  const result=await done(manager,task.id);
+  assert.equal(result.status,'failed');
+  assert.match(result.error,/Disk full/);
+  assert.equal(fs.existsSync(result.destination),false);
+  assert.deepEqual(fs.readFileSync(result.destination+'.part'),bytes);
+});

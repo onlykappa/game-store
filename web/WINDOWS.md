@@ -60,6 +60,7 @@ The URLs above are examples, not working games. Optional `sha256` must be a 64-c
 
 - Real bytes stream to disk, with byte counts and progress when a server supplies a length.
 - Each transfer gets its own folder. Existing files are never replaced.
+- On drives without hard-link support (including exFAT), verified downloads are copied to an exclusively created final file. This step can be cancelled and temporarily needs enough free space for a second copy; failed copies retain the original `.part` for retry.
 - A `.part` file is accepted only after the stream finishes, its size matches the server when known, and its optional hash matches. Computed hashes are saved in history.
 - Server errors, HTML landing pages, invalid redirects and hash mismatches are shown as failures. A direct source is required; host-browser capture is not implemented.
 - Quit interrupts transfers. On restart these are marked **interrupted**. Retry starts from the beginning. Partial files are retained in their task folder and overwritten on retry.
