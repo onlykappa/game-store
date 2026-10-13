@@ -10,7 +10,7 @@ if (!app.requestSingleInstanceLock()) { app.quit(); } else {
     const data = app.getPath('userData');
     const catalogFile = path.join(data, 'catalog.json');
     const settingsFile = path.join(data, 'settings.json');
-    const saved = readJson(settingsFile, {});
+    const saved = readJson(settingsFile, {}, value => value !== null && typeof value === 'object' && !Array.isArray(value));
     settings = { folder: typeof saved.folder === 'string' && path.isAbsolute(saved.folder) ? saved.folder : path.join(app.getPath('downloads'), 'Overdrive') };
     try { games = normalizeCatalog(readJson(catalogFile, [])); } catch { games = []; }
     win = new BrowserWindow({ width: 1440, height: 900, minWidth: 1000, minHeight: 650, backgroundColor: '#080808', title: 'Overdrive Windows', autoHideMenuBar: true, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), sandbox: true, contextIsolation: true, nodeIntegration: false } });

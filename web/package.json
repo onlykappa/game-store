@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "build:ps5": "vite build -c vite.ps5.config.ts",
     "start": "electron .",
-    "test:desktop": "node --test desktop/core.test.cjs desktop/kyty.test.cjs",
+    "test:desktop": "node --test desktop/core.test.cjs desktop/kyty.test.cjs desktop/main.test.cjs",
     "dist:windows": "npm run build && electron-builder --win --x64 --publish never",
     "smoke:desktop": "electron --no-sandbox --ozone-platform=headless desktop/smoke.cjs"
   },

@@ -33,9 +33,13 @@ function writeJson(file, data) {
   fs.writeFileSync(file + '.tmp', JSON.stringify(data, null, 2));
   fs.renameSync(file + '.tmp', file);
 }
-function readJson(file, fallback) {
+function readJson(file, fallback, validate = () => true) {
   if (!fs.existsSync(file)) return fallback;
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
+  try {
+    const value = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!validate(value)) throw new Error('Unexpected saved data shape.');
+    return value;
+  }
   catch { fs.copyFileSync(file, file + `.damaged-${Date.now()}`); return fallback; }
 }
 class DownloadManager {
