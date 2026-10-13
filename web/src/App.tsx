@@ -1,3 +1,5 @@
+import { DesktopPanel } from './components/DesktopPanel'
+import { useDesktopGamepad } from './lib/gamepad'
 import { MotionConfig, motion } from 'motion/react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { Footer } from './components/layout/Footer'
@@ -11,6 +13,7 @@ import { useSpatialNavigation } from './lib/spatialNav'
 
 export default function App() {
   useSpatialNavigation()
+  useDesktopGamepad()
   const { pathname } = useLocation()
 
   return (
@@ -18,6 +21,7 @@ export default function App() {
       <div className="flex min-h-dvh flex-col">
         <ScrollToTop />
         <Header />
+        <DesktopPanel />
         {/* Troca de tela com um fade curto em vez de corte seco (com capa voando, quem faz o fade é a View Transition) */}
         <motion.main key={pathname} initial={isMorphing() ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25, ease: 'easeOut' }} className="flex-1">
           <Routes>

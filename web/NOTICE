@@ -1,0 +1,4 @@
+Overdrive Windows derives from Overdrive by half144 and contributors, itself derived from Orbit Store (GPL-3.0).
+Original sources: https://github.com/overdriveps5/game-store
+Windows port source: https://github.com/onlykappa/game-store/tree/windows-port
+See LICENSE and LICENSE-ATTRIBUTION. Bundled font and sound licenses remain in dist.

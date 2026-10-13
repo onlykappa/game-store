@@ -10,6 +10,7 @@ import { genresOf, storageGb, type Game } from '../../lib/catalog'
 import { sound } from '../../lib/sound'
 import { goBack } from '../../lib/spatialNav'
 import { toggleWishlist, useWishlist } from '../../lib/wishlist'
+import { KytyActions } from './KytyActions'
 import { DownloadButton } from './DownloadButton'
 
 const EASE = [0.16, 1, 0.3, 1] as const
@@ -100,9 +101,10 @@ export function GameHero({ game }: { game: Game }) {
             </motion.div>
 
             <motion.div variants={rise} className="mt-7 flex items-start gap-2.5">
-              {/* Download simulado: é a ação principal e onde o foco começa (data-autofocus no próprio botão) */}
+              {/* Real desktop download: focus starts on this action */}
               <div className="w-[17rem]">
-                <DownloadButton sizeGb={storageGb(game)} label="Install" onInstalled={onInstalled} />
+                <DownloadButton game={game} sizeGb={storageGb(game)} label="Download" onInstalled={onInstalled} />
+                <KytyActions game={game} />
               </div>
               <Button variant="outline" size="lg" className="bg-canvas/40 backdrop-blur" aria-pressed={wished} onClick={() => toggleWishlist(game.id)}>
                 <WishHeart active={wished} />
@@ -131,7 +133,7 @@ export function GameHero({ game }: { game: Game }) {
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-1.5 text-xs text-muted">
                 <CircleCheck className="size-3.5 text-fg" />
-                Install complete
+                Download complete
               </p>
               <p className="mt-0.5 truncate text-sm font-medium">{game.title}</p>
             </div>

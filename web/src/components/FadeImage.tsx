@@ -8,6 +8,7 @@ export function FadeImage({ className, alt = '', ...props }: ImgHTMLAttributes<H
   return (
     <img
       {...props}
+      src={props.src || './favicon.svg'}
       alt={alt}
       ref={(el) => {
         if (el?.complete && el.naturalWidth) setLoaded(true)

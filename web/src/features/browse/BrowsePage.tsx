@@ -11,6 +11,7 @@ import { GenreRail } from './GenreRail'
 import { SortSelect } from './SortSelect'
 import { TopCharts } from './TopCharts'
 import { Spotlight } from './Spotlight'
+import { games } from '../../lib/catalog'
 import { useGameFilters } from './useGameFilters'
 
 const PAGE = 24
@@ -56,8 +57,8 @@ export function BrowsePage() {
 
   return (
     <div className="mx-auto max-w-[140rem] space-y-14 px-8 pt-6 pb-10">
-      <Spotlight />
-      <TopCharts />
+      {games.length > 0 && <Spotlight />}
+      {games.length > 0 && <TopCharts />}
       {/* Escolher um gênero só filtra a grade abaixo: o foco fica no gênero e a tela não pula */}
       <GenreRail selected={filters.genre} onSelect={(genre) => toggle('genre', genre)} />
 

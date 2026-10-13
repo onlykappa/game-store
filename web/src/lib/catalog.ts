@@ -1,6 +1,10 @@
-import raw from '@catalog/store/games.json'
+
 
 export type Game = {
+  downloadUrl?: string
+  fileName?: string
+  sha256?: string
+  platform?: string
   id: string
   slug: string
   title: string
@@ -19,7 +23,12 @@ export type Game = {
   sizeGb: number | null
 }
 
-export const games: Game[] = raw
+export const games: Game[] = []
+export function setGames(next: Game[]) {
+  games.splice(0, games.length, ...next)
+  GENRES.splice(0, GENRES.length, ...new Set(games.flatMap(genresOf)))
+  GENRES.sort((a, b) => a.localeCompare(b))
+}
 
 export const getGame = (slug: string) => games.find((g) => g.slug === slug)
 

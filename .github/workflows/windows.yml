@@ -1,0 +1,35 @@
+name: Overdrive Windows
+on:
+  push:
+    branches: [windows-port]
+    paths: ['web/**', '.github/workflows/windows.yml']
+  pull_request:
+    paths: ['web/**', '.github/workflows/windows.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run test:desktop
+      - run: npm run dist:windows
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Overdrive-Windows-0.2.0
+          path: |
+            web/release/*.zip
+            web/release/*.exe
+          if-no-files-found: error

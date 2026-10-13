@@ -56,7 +56,7 @@ export function TopCharts() {
                     </span>
                     <span className="block shrink-0 overflow-hidden rounded">
                       <img
-                        src={game.images.cover}
+                        src={game.images.cover || './favicon.svg'}
                         alt=""
                         loading="lazy"
                         className="aspect-[3/4] w-11 object-cover"

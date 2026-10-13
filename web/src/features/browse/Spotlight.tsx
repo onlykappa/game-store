@@ -66,7 +66,7 @@ export function Spotlight() {
           <AnimatePresence initial={false}>
             <motion.img
               key={game.id}
-              src={game.images.hero}
+              src={game.images.hero || undefined}
               alt=""
               // Zoom lento durante o slide inteiro, como um plano de cinema
               initial={{ opacity: 0, scale: 1.08 }}

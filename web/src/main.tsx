@@ -1,11 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, HashRouter } from 'react-router-dom'
-import App from './App'
+import { setGames } from './lib/catalog'
+const initialCatalog = window.overdrive ? await window.overdrive.catalog() : []
+setGames(initialCatalog)
+const { default: App } = await import('./App')
 import './index.css'
 
 // No PS5 o app é um arquivo servido de uma pasta qualquer (file:// ou o /fs/ do websrv), sem servidor para as rotas: elas vão para o #
-const Router = import.meta.env.MODE === 'ps5' ? HashRouter : BrowserRouter
+const Router = window.overdrive || import.meta.env.MODE === 'ps5' ? HashRouter : BrowserRouter
 
 // A rolagem é do app (spatialNav guarda a posição de cada tela para o Voltar); a do navegador reabria o
 // recarregamento no meio da página, com o foco lá em cima, fora da tela

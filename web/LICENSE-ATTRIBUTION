@@ -1,0 +1,29 @@
+Overdrive attribution-preservation term
+
+Copyright (C) 2026 overdriveps5 and PS5 React contributors
+
+Source files that refer to this file are licensed under the GNU General Public
+License, version 3 or (at your option) any later version, with the following
+additional term authorized by GPLv3 section 7(b):
+
+Redistributions of that material, or works containing it, must preserve the
+following reasonable author attribution in the material's accompanying legal
+notices or in the Appropriate Legal Notices displayed by the work:
+
+    Overdrive — created by overdriveps5 and PS5 React contributors.
+    https://github.com/overdriveps5/game-store
+
+The attribution may be presented with other third-party credits and reformatted
+without changing its meaning. This term does not require advertising, an
+endorsement, a startup screen, or attribution in every screen of an application.
+
+This term applies only to original Overdrive material whose source-file notice
+refers to it. It does not add conditions to third-party code, fonts, sounds or
+license texts, nor to the material adapted from Orbit Store (GPL-3.0), which
+keeps its own notices.
+
+PS5 React, the engine Overdrive is built with, carries its own attribution term:
+see LICENSE-ATTRIBUTION in https://github.com/overdriveps5/ps5-react.
+
+The complete GNU GPL license text is in LICENSE. Other applicable licenses
+and copyright notices must also be preserved.

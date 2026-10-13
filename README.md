@@ -1,3 +1,5 @@
+> **Windows port:** This branch contains a standalone Windows adaptation in `web/`. See [Windows setup and catalog format](web/WINDOWS.md). The private upstream catalog is not included.
+
 # Overdrive
 
 A game store for the PS5. Builds are published on [overdriveps5/overdrive-releases](https://github.com/overdriveps5/overdrive-releases).

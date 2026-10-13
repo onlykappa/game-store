@@ -7,7 +7,7 @@ export function Footer() {
         <span className="text-muted">
           <Logo />
         </span>
-        <p>Spectrum Library</p>
+        <p>Windows Preview · Overdrive by half144 and contributors</p>
       </div>
     </footer>
   )
